@@ -1,4 +1,2 @@
 include:
-  - targets
-  - config
-  - constants
+  - report/targets
