@@ -1,3 +1,4 @@
 include:
+  - targets
   - config
   - constants
