@@ -7,8 +7,8 @@ from salt.utils import which
 class Node(object):
 
     def __init__(self):
-        self.get_nodes_cmd = __salt__['pillar.get']('get_nodes_cmd')
-        self.get_cib_cmd = __salt__['pillar.get']('get_cib_cmd')
+        self.get_nodes_cmd = _salt_pillar('get_nodes_cmd')
+        self.get_cib_cmd = _salt_pillar('get_cib_cmd')
 
     def is_ha_node(self):
         if which("pacemakerd") and which("corosync"):
@@ -16,25 +16,25 @@ class Node(object):
         return False
 
     def is_live_node(self):
-        if __utils__['crmshutils.is_process']("crmd"):
+        if _salt_utils('crmshutils.is_process', 'crmd'):
             return True
         return False
 
     def get_member(self):
         if self.is_live_node():
-            return __salt__['cmd.run_all'](self.get_nodes_cmd)['stdout']
+            return _salt_run(self.get_nodes_cmd)
         elif self.is_ha_node():
-            cib_dir = __salt__['pillar.get']('cib_dir')
-            cib_file = __salt__['pillar.get']('cib_file')
+            cib_dir = _salt_pillar('cib_dir')
+            cib_file = _salt_pillar('cib_file')
             _env = {"CIB_file": os.path.join(cib_dir, cib_file)}
-            return __salt__['cmd.run_all'](self.get_nodes_cmd, env=_env)['stdout']
+            return _salt_run(self.get_nodes_cmd, env=_env)
         else:
             return None
 
     def get_cluster_name(self):
         if self.is_live_node():
             cmd = self.get_cib_cmd + " -o crm_config"
-            return __salt__['cmd.run_all'](cmd)['stdout']
+            return _salt_run(cmd)
 
 
 def get_member():
@@ -46,3 +46,12 @@ def get_member():
 def get_cluster_name():
     node = Node()
     return node.get_cluster_name()
+
+def _salt_pillar(item, action="get"):
+    return __salt__['pillar.%s' % action](item)
+
+def _salt_run(cmd, out="stdout", **kwargs):
+    return __salt__['cmd.run_all'](cmd, **kwargs)[out]
+
+def _salt_utils(module, *args, **kwargs):
+    return __utils__[module](*args, **kwargs)
