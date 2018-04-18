@@ -14,7 +14,7 @@ class Minions(object):
         self.matches = self._matches()
 
     def _query(self):
-        with utils.stdchannel_redirected():
+        with __utils__['crmshutils.stdchannel_redirected']():
             ret = self.local.cmd('*', 'saltutil.pillar_refresh')
             minions = self.local.cmd('*', 'pillar.get', ['minions'], tgt_type="compound")
 
@@ -27,7 +27,7 @@ class Minions(object):
 
     def _matches(self):
         if self.minions:
-            with utils.stdchannel_redirected():
+            with __utils__['crmshutils.stdchannel_redirected']():
                 result = self.local.cmd(self.minions, 'pillar.get', ['id'], tgt_type="compound")
             return list(result.keys())
         return []

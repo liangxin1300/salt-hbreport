@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import salt.utils.path
+from salt.utils import which
+
+
+def test():
+    if __utils__['path.which']("ls"):
+        return True
+    return False
 
 
 class Node(object):
@@ -10,13 +16,27 @@ class Node(object):
         self.cluster_name = self.get_cluster_name()
 
     def is_ha_node(self):
-        pass
+        if which("pacemakerd") and which("corosync"):
+            return True
+        return False
 
     def is_live_node(self):
-        pass
+        if __utils__['crmshutils.is_process']("crmd"):
+            return True
+        return False
 
     def get_member(self):
-        pass
+        if self.is_live_node():
+            cmd = __salt__['pillar.get']('get_nodes_cmd')
+            return __salt__['cmd.run_all'](cmd)
+        elif self.is_ha_node():
+            pass
+        else:
+            return None
 
     def get_cluster_name(self):
         pass
+
+def get_member():
+    node = Node()
+    return node.get_member()
